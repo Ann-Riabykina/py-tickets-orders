@@ -1,5 +1,4 @@
-from rest_framework import viewsets, filters
-from rest_framework.pagination import PageNumberPagination
+from rest_framework import viewsets
 
 from cinema.models import (
     Genre,
