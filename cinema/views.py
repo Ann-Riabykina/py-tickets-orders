@@ -64,7 +64,7 @@ class MovieViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(title__icontains=title)
         if self.action in ("list", "retrieve"):
             queryset = queryset.prefetch_related("genres", "actors")
-        return queryset.distinct().prefetch_related("actors", "genres")
+        return queryset.distinct()
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -101,15 +101,8 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         return MovieSessionSerializer
 
 
-class OrderPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = "page_size"
-    max_page_size = 100
-
-
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
-    pagination_class = OrderPagination
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
