@@ -26,29 +26,34 @@ from cinema.serializers import (
 
 
 class GenreViewSet(viewsets.ModelViewSet):
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by("id")
     serializer_class = GenreSerializer
 
 
 class ActorViewSet(viewsets.ModelViewSet):
-    queryset = Actor.objects.all()
+    queryset = Actor.objects.all().order_by("id")
     serializer_class = ActorSerializer
+    pagination_class = None
 
 
 class CinemaHallViewSet(viewsets.ModelViewSet):
-    queryset = CinemaHall.objects.all()
+    queryset = CinemaHall.objects.all().order_by("id")
     serializer_class = CinemaHallSerializer
+    pagination_class = None
 
 
 class MovieViewSet(viewsets.ModelViewSet):
-    queryset = Movie.objects.all()
+    queryset = Movie.objects.all().order_by("id")
     serializer_class = MovieSerializer
+    pagination_class = None
 
     def get_queryset(self):
+        queryset = Movie.objects.all()
+
         actors = self.request.query_params.get("actors")
         genres = self.request.query_params.get("genres")
         title = self.request.query_params.get("title")
-        queryset = self.queryset
+
         if actors:
             actors_ids = [int(str_id) for str_id in actors.split(",")]
             queryset = queryset.filter(actors__id__in=actors_ids)
@@ -59,7 +64,7 @@ class MovieViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(title__icontains=title)
         if self.action in ("list", "retrieve"):
             queryset = queryset.prefetch_related("genres", "actors")
-        return queryset.distinct()
+        return queryset.distinct().prefetch_related("actors", "genres")
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -73,7 +78,8 @@ class MovieViewSet(viewsets.ModelViewSet):
 
 class MovieSessionViewSet(viewsets.ModelViewSet):
     serializer_class = MovieSessionSerializer
-    queryset = MovieSession.objects.all()
+    queryset = MovieSession.objects.all().order_by("show_time")
+    pagination_class = None
 
     def get_queryset(self):
         queryset = MovieSession.objects.all()
