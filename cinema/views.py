@@ -24,6 +24,7 @@ from cinema.serializers import (
     OrderSerializer,
     OrderCreateSerializer,
 )
+from cinema.filters import MovieFilter, MovieSessionFilter
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -49,7 +50,7 @@ class MovieViewSet(viewsets.ModelViewSet):
     serializer_class = MovieSerializer
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ["title"]
-    filterset_fields = ["genres__name", "actors__id"]
+    filterset_class = MovieFilter
     pagination_class = None
 
     def get_serializer_class(self):
@@ -67,7 +68,7 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         "movie", "cinema_hall").order_by("show_time")
     serializer_class = MovieSessionSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["movie", "show_time"]
+    filterset_class = MovieSessionFilter
     pagination_class = None
 
     def get_serializer_class(self):
