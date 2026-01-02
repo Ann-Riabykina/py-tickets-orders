@@ -29,16 +29,19 @@ from cinema.serializers import (
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all().order_by("id")
     serializer_class = GenreSerializer
+    pagination_class = None
 
 
 class ActorViewSet(viewsets.ModelViewSet):
     queryset = Actor.objects.all().order_by("id")
     serializer_class = ActorSerializer
+    pagination_class = None
 
 
 class CinemaHallViewSet(viewsets.ModelViewSet):
     queryset = CinemaHall.objects.all().order_by("id")
     serializer_class = CinemaHallSerializer
+    pagination_class = None
 
 
 class MovieViewSet(viewsets.ModelViewSet):
@@ -47,6 +50,7 @@ class MovieViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ["title"]
     filterset_fields = ["genres__name", "actors__id"]
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -64,6 +68,7 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
     serializer_class = MovieSessionSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["movie", "show_time"]
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.action == "list":

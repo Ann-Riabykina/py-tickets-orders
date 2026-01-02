@@ -48,10 +48,12 @@ class MovieListSerializer(MovieSerializer):
         model = Movie
         fields = ("id", "title", "description", "duration", "genres", "actors")
 
-    def get_genres(self, obj):
+    @staticmethod
+    def get_genres(obj):
         return [genre.name for genre in obj.genres.all()]
 
-    def get_actors(self, obj):
+    @staticmethod
+    def get_actors(obj):
         return [f"{actor.first_name} {actor.last_name}" for actor in
                 obj.actors.all()]
 
@@ -97,8 +99,8 @@ class MovieSessionListSerializer(MovieSessionSerializer):
 
 
 class MovieSessionDetailSerializer(MovieSessionSerializer):
-    movie = MovieListSerializer(many=False, read_only=True)
-    cinema_hall = CinemaHallSerializer(many=False, read_only=True)
+    movie = MovieListSerializer(read_only=True)
+    cinema_hall = CinemaHallSerializer(read_only=True)
 
     class Meta:
         model = MovieSession
@@ -115,11 +117,13 @@ class MovieSessionDetailWithTakenSerializer(MovieSessionDetailSerializer):
             "tickets_available",
         )
 
-    def get_taken_places(self, obj):
+    @staticmethod
+    def get_taken_places(obj):
         tickets = obj.tickets.all()
         return [{"row": t.row, "seat": t.seat} for t in tickets]
 
-    def get_tickets_available(self, obj):
+    @staticmethod
+    def get_tickets_available(obj):
         total_capacity = obj.cinema_hall.capacity
         taken = obj.tickets.count()
         return total_capacity - taken
@@ -145,7 +149,7 @@ class TicketCreateSerializer(serializers.ModelSerializer):
         if Ticket.objects.filter(movie_session=session,
                                  row=row, seat=seat).exists():
             raise serializers.ValidationError(
-                f"Место {row}-{seat} уже занято на сеансе {session.id}"
+                f"Seat {row}-{seat} is already taken for session {session.id}"
             )
         return data
 
@@ -159,8 +163,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
-    tickets = serializers.PrimaryKeyRelatedField(many=True,
-                                                 queryset=Ticket.objects.all())
+    tickets = TicketCreateSerializer(many=True)
 
     class Meta:
         model = Order
@@ -168,7 +171,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        tickets = validated_data.pop("tickets")
+        tickets_data = validated_data.pop("tickets")
         order = Order.objects.create(user=user)
-        order.tickets.set(tickets)
+        for ticket_data in tickets_data:
+            Ticket.objects.create(order=order, **ticket_data)
         return order
