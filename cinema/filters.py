@@ -6,6 +6,7 @@ from cinema.models import (
     Genre,
 )
 
+
 class MovieFilter(filters.FilterSet):
     genres = filters.ModelMultipleChoiceFilter(
         field_name="genres__id", queryset=Genre.objects.all()
