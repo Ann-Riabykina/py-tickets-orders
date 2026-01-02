@@ -45,7 +45,7 @@ class MovieListSerializer(MovieSerializer):
         many=True, read_only=True, slug_field="name"
     )
     actors = serializers.SlugRelatedField(
-        many=True, read_only=True, slug_field="full_name"
+        many=True, read_only=True, slug_field="first_name"
     )
 
 
@@ -109,8 +109,7 @@ class MovieSessionDetailWithTakenSerializer(MovieSessionDetailSerializer):
         )
 
     def get_taken_places(self, obj):
-        tickets = obj.tickets.all()
-        return [{"row": t.row, "seat": t.seat} for t in tickets]
+        return obj.tickets.count()
 
     def get_tickets_available(self, obj):
         total_capacity = obj.cinema_hall.capacity
@@ -152,7 +151,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
-    tickets = TicketCreateSerializer(many=True)
+    tickets = serializers.PrimaryKeyRelatedField(many=True,
+                                                 queryset=Ticket.objects.all())
 
     class Meta:
         model = Order
@@ -160,8 +160,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        tickets_data = validated_data.pop("tickets")
+        tickets = validated_data.pop("tickets")
         order = Order.objects.create(user=user)
-        for ticket_data in tickets_data:
-            Ticket.objects.create(order=order, **ticket_data)
+        order.tickets.set(tickets)
         return order

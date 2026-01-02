@@ -42,7 +42,7 @@ class CinemaHallViewSet(viewsets.ModelViewSet):
 
 
 class MovieViewSet(viewsets.ModelViewSet):
-    queryset = Movie.objects.all()
+    queryset = Movie.objects.all().distinct()
     serializer_class = MovieSerializer
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     search_fields = ["title"]
@@ -60,7 +60,7 @@ class MovieViewSet(viewsets.ModelViewSet):
 
 class MovieSessionViewSet(viewsets.ModelViewSet):
     queryset = MovieSession.objects.all().select_related(
-        "movie", "cinema_hall")
+        "movie", "cinema_hall").order_by("show_time")
     serializer_class = MovieSessionSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["movie", "show_time"]
